@@ -7,6 +7,10 @@ jobs:
     name: Deploy
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: "read"
+      id-token: "write"
+
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -18,3 +22,26 @@ jobs:
 
       - name: Build the app
         run: ./scripts/buildprod.sh
+
+      - id: "auth"
+        uses: "google-github-actions/auth@v2"
+        with:
+          workload_identity_provider: "projects/123456789/locations/global/workloadIdentityPools"
+          service_account: "my-service-account@my-project.iam.gserviceaccount.com"
+
+      - name: "Set up Cloud SDK"
+        uses: "google-github-actions/setup-gcloud@v3"
+        with:
+          version: ">= 363.0.0"
+
+      - name: "Use gcloud CLI"
+        run: "gcloud info"
+
+      - name: Configure Docker for gcloud
+        run: gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
+
+      - name: Build and Push Docker image to Artifact Registry
+        run: |
+          gcloud builds submit \
+            --tag us-central1-docker.pkg.dev/notely-478809/notely-ar-repo/notely:latest \
+            .

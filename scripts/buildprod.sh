@@ -1,3 +1,11 @@
 #!/bin/bash
+set -e
 
-CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o notely
+export CGO_ENABLED=0
+export GOOS=linux
+export GOARCH=amd64
+
+go env GOOS
+go env GOARCH
+
+go build -o notely
